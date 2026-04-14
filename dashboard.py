@@ -42,7 +42,7 @@ st.markdown("""
 
     /* Tabs */
     button[data-baseweb="tab"] { font-weight: 600; color: #b0b0cc !important; }
-    button[data-baseweb="tab"][aria-selected="true"] { color: #4cc9f0 !important; }
+    button[data-baseweb="tab"][aria-selected="true"] { color: #ff4b4b !important; }
 
     /* Titulos e textos */
     h1, h2, h3 { color: #e0e0ff !important; }
