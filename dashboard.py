@@ -20,40 +20,17 @@ st.markdown("""
     /* Fundo geral escuro */
     .stApp { background-color: #0e1117; }
 
-    /* Cards de KPI customizados */
-    .kpi-card {
+    /* Cards de KPI */
+    div[data-testid="stMetric"] {
         background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         border: 1px solid #2a2a4a;
         border-radius: 12px;
-        padding: 18px 14px;
-        text-align: center;
+        padding: 16px 20px;
         box-shadow: 0 2px 12px rgba(0,0,0,0.4);
-        transition: transform 0.2s, box-shadow 0.2s;
-        cursor: default;
     }
-    .kpi-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(76,201,240,0.15);
-        border-color: #4cc9f0;
-    }
-    .kpi-label {
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: #8888aa;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 6px;
-    }
-    .kpi-value {
-        font-size: 1.55rem;
-        font-weight: 700;
-        color: #e0e0ff;
-        line-height: 1.2;
-    }
-    .kpi-sub {
-        font-size: 0.72rem;
-        color: #6a6a8a;
-        margin-top: 4px;
+    div[data-testid="stMetric"] label { font-size: 0.82rem; color: #8888aa; }
+    div[data-testid="stMetric"] div[data-testid="stMetricValue"] {
+        font-size: 1.45rem; font-weight: 700; color: #e0e0ff;
     }
 
     /* Sidebar */
@@ -166,59 +143,13 @@ pct_atraso = df_entregues['tempo_atraso'].mean() * 100 if len(df_entregues) > 0 
 pedidos_entregues = df_entregues['order_id'].nunique()
 taxa_entrega = (pedidos_entregues / total_pedidos * 100) if total_pedidos > 0 else 0
 
-def kpi_html(label, value, subtitle=''):
-    sub = f'<div class="kpi-sub">{subtitle}</div>' if subtitle else ''
-    return f'''
-    <div class="kpi-card" title="{subtitle}">
-        <div class="kpi-label">{label}</div>
-        <div class="kpi-value">{value}</div>
-        {sub}
-    </div>'''
-
 k1, k2, k3, k4, k5, k6 = st.columns(6)
-
-with k1:
-    st.markdown(kpi_html(
-        'Faturamento',
-        formatar_valor(total_faturamento),
-        f'R$ {total_faturamento:,.2f}',
-    ), unsafe_allow_html=True)
-
-with k2:
-    st.markdown(kpi_html(
-        'Frete Total',
-        formatar_valor(total_frete),
-        f'R$ {total_frete:,.2f}',
-    ), unsafe_allow_html=True)
-
-with k3:
-    st.markdown(kpi_html(
-        'Pedidos',
-        f'{total_pedidos:,}',
-        f'Entregues: {pedidos_entregues:,}',
-    ), unsafe_allow_html=True)
-
-with k4:
-    st.markdown(kpi_html(
-        'Ticket Medio',
-        f'R$ {ticket_medio:,.2f}',
-    ), unsafe_allow_html=True)
-
-with k5:
-    val_entrega = f'{tempo_medio:.1f} dias' if not np.isnan(tempo_medio) else 'N/A'
-    mediana = f'Mediana: {df_entregues["tempo_entrega"].median():.0f} dias' if len(df_entregues) > 0 else ''
-    st.markdown(kpi_html(
-        'Entrega Media',
-        val_entrega,
-        mediana,
-    ), unsafe_allow_html=True)
-
-with k6:
-    st.markdown(kpi_html(
-        'Taxa de Entrega',
-        f'{taxa_entrega:.1f}%',
-        f'{pedidos_entregues:,} de {total_pedidos:,}',
-    ), unsafe_allow_html=True)
+k1.metric('Faturamento', formatar_valor(total_faturamento))
+k2.metric('Frete Total', formatar_valor(total_frete))
+k3.metric('Pedidos', f'{total_pedidos:,}')
+k4.metric('Ticket Medio', f'R$ {ticket_medio:,.2f}')
+k5.metric('Entrega Media', f'{tempo_medio:.1f} dias' if not np.isnan(tempo_medio) else 'N/A')
+k6.metric('Taxa de Entrega', f'{taxa_entrega:.1f}%')
 
 st.markdown('')
 
