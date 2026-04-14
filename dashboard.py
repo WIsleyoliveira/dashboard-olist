@@ -144,12 +144,44 @@ pedidos_entregues = df_entregues['order_id'].nunique()
 taxa_entrega = (pedidos_entregues / total_pedidos * 100) if total_pedidos > 0 else 0
 
 k1, k2, k3, k4, k5, k6 = st.columns(6)
-k1.metric('Faturamento', formatar_valor(total_faturamento))
-k2.metric('Frete Total', formatar_valor(total_frete))
-k3.metric('Pedidos', f'{total_pedidos:,}')
-k4.metric('Ticket Medio', f'R$ {ticket_medio:,.2f}')
-k5.metric('Entrega Media', f'{tempo_medio:.0f} dias' if not np.isnan(tempo_medio) else 'N/A')
-k6.metric('Taxa de Entrega', f'{taxa_entrega:.1f}%')
+
+with k1:
+    with st.popover(f'**Faturamento**\n\n### {formatar_valor(total_faturamento)}', use_container_width=True):
+        st.markdown(f'**Valor exato:** R$ {total_faturamento:,.2f}')
+        st.markdown(f'Receita media/pedido: R$ {total_faturamento / total_pedidos:,.2f}' if total_pedidos else '')
+
+with k2:
+    with st.popover(f'**Frete Total**\n\n### {formatar_valor(total_frete)}', use_container_width=True):
+        st.markdown(f'**Valor exato:** R$ {total_frete:,.2f}')
+        st.markdown(f'Frete medio/pedido: R$ {total_frete / total_pedidos:,.2f}' if total_pedidos else '')
+        st.markdown(f'% do faturamento: {total_frete / total_faturamento * 100:.1f}%' if total_faturamento else '')
+
+with k3:
+    with st.popover(f'**Pedidos**\n\n### {total_pedidos:,}', use_container_width=True):
+        st.markdown(f'**Total de pedidos unicos:** {total_pedidos:,}')
+        st.markdown(f'Entregues: {pedidos_entregues:,}')
+        st.markdown(f'Outros: {total_pedidos - pedidos_entregues:,}')
+
+with k4:
+    with st.popover(f'**Ticket Medio**\n\n### R$ {ticket_medio:,.2f}', use_container_width=True):
+        st.markdown(f'**Valor exato:** R$ {ticket_medio:,.2f}')
+        st.markdown(f'Maior pedido: R$ {df_f.groupby("order_id")["price"].sum().max():,.2f}' if total_pedidos else '')
+        st.markdown(f'Menor pedido: R$ {df_f.groupby("order_id")["price"].sum().min():,.2f}' if total_pedidos else '')
+
+with k5:
+    val_entrega = f'{tempo_medio:.1f} dias' if not np.isnan(tempo_medio) else 'N/A'
+    with st.popover(f'**Entrega Media**\n\n### {val_entrega}', use_container_width=True):
+        if not np.isnan(tempo_medio):
+            st.markdown(f'**Tempo medio:** {tempo_medio:.2f} dias')
+            st.markdown(f'Mais rapida: {df_entregues["tempo_entrega"].min():.0f} dias')
+            st.markdown(f'Mais lenta: {df_entregues["tempo_entrega"].max():.0f} dias')
+            st.markdown(f'Mediana: {df_entregues["tempo_entrega"].median():.0f} dias')
+
+with k6:
+    with st.popover(f'**Taxa de Entrega**\n\n### {taxa_entrega:.1f}%', use_container_width=True):
+        st.markdown(f'**Percentual exato:** {taxa_entrega:.2f}%')
+        st.markdown(f'Entregues: {pedidos_entregues:,} de {total_pedidos:,}')
+        st.markdown(f'% com atraso: {pct_atraso:.1f}%')
 
 st.markdown('')
 
