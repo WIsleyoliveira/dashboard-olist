@@ -532,22 +532,31 @@ with tab_dados:
     st.markdown('---')
     st.subheader('Conclusoes e Recomendacoes')
 
+    # Calcular metricas dinamicas para as conclusoes
+    pontual_pct = (100 - pct_atraso) if len(df_entregues) > 0 else 0
+    entrega_media = df_entregues['tempo_entrega'].mean() if len(df_entregues) > 0 else 0
+    pct_delivered = (df_f[df_f['order_status'] == 'delivered'].shape[0] / len(df_f) * 100) if len(df_f) > 0 else 0
+    itens_por_pedido = df_f.groupby('order_id')['order_item_id'].count().mean() if total_pedidos > 0 else 0
+    entregas_longas = df_entregues[df_entregues['tempo_entrega'] > 50].shape[0] if len(df_entregues) > 0 else 0
+    top_cat_nome = df_f.groupby('product_category_name')['price'].sum().idxmax() if len(df_f) > 0 else 'N/A'
+    frete_medio = df_f['freight_value'].mean() if len(df_f) > 0 else 0
+
     col_c1, col_c2 = st.columns(2)
     with col_c1:
-        st.markdown("""
-        **Pontos Fortes da Operacao:**
-        - Taxa de pontualidade acima de 90%
-        - Crescimento sustentavel pos-Black Friday
-        - Base consolidada com taxa de cancelamento minima
-        - Tempo medio de entrega competitivo (~12 dias)
+        st.markdown(f"""
+        **Pontos Fortes (dados filtrados):**
+        - Pontualidade de {pontual_pct:.1f}% nas entregas
+        - {pct_delivered:.1f}% dos pedidos concluidos com sucesso
+        - Tempo medio de entrega de {entrega_media:.0f} dias
+        - Categoria lider: {top_cat_nome}
         """)
     with col_c2:
-        st.markdown("""
+        st.markdown(f"""
         **Oportunidades de Melhoria:**
-        - Implementar cross-sell (maioria compra 1 item)
-        - Investigar entregas extremas (>50 dias)
+        - Media de {itens_por_pedido:.1f} itens por pedido (potencial para cross-sell)
+        - {entregas_longas} entregas acima de 50 dias no periodo
+        - Frete medio de R$ {frete_medio:.2f} (avaliar otimizacao logistica)
         - Reduzir friccao em pedidos de alto valor
-        - Otimizar logistica de itens volumosos
         """)
 
 
