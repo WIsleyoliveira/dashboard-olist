@@ -339,7 +339,14 @@ with tab_entregas:
                 'threshold': {'line': {'color': '#ff4b4b', 'width': 3}, 'thickness': 0.8, 'value': 90},
             }
         ))
-        fig_gauge.update_layout(**DARK_LAYOUT, template='plotly_dark', height=400)
+        fig_gauge.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            font_color='#b0b0cc',
+            template='plotly_dark',
+            height=400,
+            margin=dict(t=80, b=0, l=30, r=30),
+        )
         st.plotly_chart(fig_gauge, width='stretch')
         insight(f'Pontualidade atual: {pontualidade:.1f}%. A meta de 90% esta marcada como referencia. '
                 f'Apenas {pct_atraso:.1f}% dos pedidos entregues sofrem atraso.')
