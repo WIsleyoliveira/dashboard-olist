@@ -2,12 +2,14 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
 
 # ---------------------------------------------------------------------------
 # Configuracao da pagina
 # ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title='Dashboard de Vendas - Olist',
+    page_title='Dashboard de Vendas - Olist', 
+    page_icon='📊',
     layout='wide',
     initial_sidebar_state='expanded',
 )
@@ -51,6 +53,34 @@ st.markdown("""
     /* Expander */
     details { background-color: #1a1a2e; border-radius: 8px; }
 
+    /* Dividers */
+    hr { border-color: #2a2a4a !important; }
+
+    /* Download button */
+    .stDownloadButton button {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border: 1px solid #4cc9f0;
+        color: #4cc9f0 !important;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    .stDownloadButton button:hover {
+        background: #4cc9f0;
+        color: #0e1117 !important;
+    }
+
+    /* Insight boxes */
+    .insight-box {
+        background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 100%);
+        border-left: 3px solid #4cc9f0;
+        border-radius: 0 8px 8px 0;
+        padding: 12px 16px;
+        margin: 8px 0 16px 0;
+        font-size: 0.85rem;
+        color: #a0a0c0;
+        line-height: 1.5;
+    }
+
     /* Rodape */
     .footer { text-align: center; color: #555577; font-size: 0.75rem; padding: 30px 0 10px 0; }
 </style>
@@ -74,6 +104,13 @@ def load():
 
 
 df = load()
+
+# ---------------------------------------------------------------------------
+# Funcao auxiliar para insights estilizados
+# ---------------------------------------------------------------------------
+def insight(texto, icone='💡'):
+    """Exibe um box de insight estilizado abaixo dos graficos."""
+    st.markdown(f'<div class="insight-box">{icone} {texto}</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
 # Sidebar - Filtros
@@ -118,13 +155,13 @@ df_entregues = df_f[df_f['order_status'] == 'delivered']
 # ---------------------------------------------------------------------------
 # Header
 # ---------------------------------------------------------------------------
-st.title('Dashboard de Vendas - Olist')
-st.caption(f'Periodo selecionado: {mes_inicio} ate {mes_fim}  |  '
-           f'{len(categorias_sel)} categorias  |  '
+st.title('📊 Dashboard de Vendas - Olist')
+st.caption(f'Periodo selecionado: **{mes_inicio}** ate **{mes_fim}**  ·  '
+           f'{len(categorias_sel)} categorias  ·  '
            f'{len(df_f):,} registros filtrados')
 
 # ---------------------------------------------------------------------------
-# KPIs
+# KPIs com deltas
 # ---------------------------------------------------------------------------
 def formatar_valor(valor):
     """Abrevia valores grandes: 1.2M, 350K, etc."""
@@ -143,13 +180,16 @@ pct_atraso = df_entregues['tempo_atraso'].mean() * 100 if len(df_entregues) > 0 
 pedidos_entregues = df_entregues['order_id'].nunique()
 taxa_entrega = (pedidos_entregues / total_pedidos * 100) if total_pedidos > 0 else 0
 
+# Calcular frete como % do faturamento
+pct_frete = (total_frete / total_faturamento * 100) if total_faturamento > 0 else 0
+
 k1, k2, k3, k4, k5, k6 = st.columns(6)
-k1.metric('Faturamento', formatar_valor(total_faturamento))
-k2.metric('Frete Total', formatar_valor(total_frete))
-k3.metric('Pedidos', f'{total_pedidos:,}')
-k4.metric('Ticket Medio', f'R$ {ticket_medio:,.2f}')
-k5.metric('Entrega Media', f'{tempo_medio:.1f} dias' if not np.isnan(tempo_medio) else 'N/A')
-k6.metric('Taxa de Entrega', f'{taxa_entrega:.1f}%')
+k1.metric('💰 Faturamento', formatar_valor(total_faturamento))
+k2.metric('🚚 Frete Total', formatar_valor(total_frete), delta=f'{pct_frete:.1f}% do faturamento', delta_color='off')
+k3.metric('📦 Pedidos', f'{total_pedidos:,}')
+k4.metric('🎯 Ticket Medio', f'R$ {ticket_medio:,.2f}')
+k5.metric('⏱️ Entrega Media', f'{tempo_medio:.1f} dias' if not np.isnan(tempo_medio) else 'N/A')
+k6.metric('✅ Taxa de Entrega', f'{taxa_entrega:.1f}%', delta=f'{pct_atraso:.1f}% atrasados', delta_color='inverse')
 
 st.markdown('')
 
@@ -157,7 +197,7 @@ st.markdown('')
 # Abas
 # ---------------------------------------------------------------------------
 tab_vendas, tab_entregas, tab_frete, tab_detalhes, tab_dados = st.tabs([
-    'Vendas', 'Entregas', 'Frete', 'Detalhamento', 'Dados',
+    '📈 Vendas', '🚚 Entregas', '💲 Frete', '🔍 Detalhamento', '📋 Dados',
 ])
 
 # Paleta de cores padrao
@@ -196,9 +236,9 @@ with tab_vendas:
                           yaxis_tickprefix='R$ ', yaxis_tickformat=',.0f',
                           template='plotly_dark', height=400)
         st.plotly_chart(fig, width='stretch')
-        st.caption('Crescimento continuo em 2017 com pico na Black Friday (nov/2017, mais de 7 mil pedidos). '
-                   'Apos o pico, o patamar se manteve alto ao longo de 2018, indicando consolidacao. '
-                   'Os dados vao de set/2016 a ago/2018 (set/2018 tem apenas 1 registro, mes incompleto).')
+        insight('Crescimento continuo em 2017 com pico na Black Friday (nov/2017, mais de 7 mil pedidos). '
+                'Apos o pico, o patamar se manteve alto ao longo de 2018, indicando consolidacao. '
+                'Os dados vao de set/2016 a ago/2018 (set/2018 tem apenas 1 registro, mes incompleto).', '📈')
 
     # --- Top 10 categorias ---
     with c2:
@@ -213,8 +253,8 @@ with tab_vendas:
                            coloraxis_showscale=False,
                            template='plotly_dark', height=400)
         st.plotly_chart(fig2, width='stretch')
-        st.caption('Beleza e Saude lidera isolada. O perfil de compra revela preferencia '
-                   'por cuidado pessoal, conforto para o lar e presentes.')
+        insight('Beleza e Saude lidera isolada. O perfil de compra revela preferencia '
+                'por cuidado pessoal, conforto para o lar e presentes.', '🏆')
 
     c3, c4 = st.columns(2)
 
@@ -228,9 +268,9 @@ with tab_vendas:
         fig3.update_layout(**DARK_LAYOUT, xaxis_title='', yaxis_title='Pedidos',
                            template='plotly_dark', height=380)
         st.plotly_chart(fig3, width='stretch')
-        st.caption('A curva de pedidos acompanha o faturamento — o crescimento da receita '
-                   'foi tracionado por ganho de escala (mais clientes), nao por aumento de precos. '
-                   'Pico em nov/2017 com 7.259 pedidos unicos.')
+        insight('A curva de pedidos acompanha o faturamento — o crescimento da receita '
+                'foi tracionado por ganho de escala (mais clientes), nao por aumento de precos. '
+                'Pico em nov/2017 com 7.259 pedidos unicos.', '📦')
 
     # --- Status dos pedidos (donut) ---
     with c4:
@@ -243,8 +283,8 @@ with tab_vendas:
         fig4.update_layout(**DARK_LAYOUT, template='plotly_dark', height=380,
                            showlegend=False)
         st.plotly_chart(fig4, width='stretch')
-        st.caption('Concentracao esmagadora em "delivered" — a base reflete vendas finalizadas '
-                   'com taxa de sucesso altissima e indice de cancelamento quase insignificante.')
+        insight('Concentracao esmagadora em "delivered" — a base reflete vendas finalizadas '
+                'com taxa de sucesso altissima e indice de cancelamento quase insignificante.', '✅')
 
     # --- Receita por categoria ao longo do tempo (heatmap) ---
     top5 = df_f.groupby('product_category_name')['price'].sum().nlargest(5).index
@@ -274,21 +314,47 @@ with tab_entregas:
         fig5.update_layout(**DARK_LAYOUT, xaxis_title='Dias', yaxis_title='Frequencia',
                            template='plotly_dark', height=400, bargap=0.05)
         st.plotly_chart(fig5, width='stretch')
-        st.caption('A maioria das entregas ocorre entre 0 e 20 dias. Porem, a cauda longa '
-                   'revela casos extremos (50 a 200 dias) que precisam ser investigados.')
+        insight('A maioria das entregas ocorre entre 0 e 20 dias. Porem, a cauda longa '
+                'revela casos extremos (50 a 200 dias) que precisam ser investigados.', '⏱️')
+
+    # --- Gauge de pontualidade + % atraso ---
+    with e2:
+        pontualidade = 100 - pct_atraso
+        fig_gauge = go.Figure(go.Indicator(
+            mode='gauge+number+delta',
+            value=pontualidade,
+            number={'suffix': '%', 'font': {'size': 48, 'color': '#e0e0ff'}},
+            delta={'reference': 90, 'increasing': {'color': COR_SUCCESS}, 'decreasing': {'color': COR_DANGER}},
+            title={'text': 'Taxa de Pontualidade', 'font': {'size': 18, 'color': '#e0e0ff'}},
+            gauge={
+                'axis': {'range': [0, 100], 'tickcolor': '#b0b0cc'},
+                'bar': {'color': COR_SUCCESS if pontualidade >= 90 else COR_WARN},
+                'bgcolor': '#1a1a2e',
+                'bordercolor': '#2a2a4a',
+                'steps': [
+                    {'range': [0, 70], 'color': 'rgba(239,71,111,0.15)'},
+                    {'range': [70, 90], 'color': 'rgba(255,209,102,0.15)'},
+                    {'range': [90, 100], 'color': 'rgba(6,214,160,0.15)'},
+                ],
+                'threshold': {'line': {'color': '#ff4b4b', 'width': 3}, 'thickness': 0.8, 'value': 90},
+            }
+        ))
+        fig_gauge.update_layout(**DARK_LAYOUT, template='plotly_dark', height=400)
+        st.plotly_chart(fig_gauge, width='stretch')
+        insight(f'Pontualidade atual: {pontualidade:.1f}%. A meta de 90% esta marcada como referencia. '
+                f'Apenas {pct_atraso:.1f}% dos pedidos entregues sofrem atraso.', '🎯')
 
     # --- % atraso por mes ---
-    with e2:
-        atraso_mes = (df_entregues.groupby('mes_ano')['tempo_atraso']
-                      .mean().mul(100).reset_index())
-        atraso_mes.columns = ['Mes', 'Pct_Atraso']
-        fig6 = px.line(atraso_mes, x='Mes', y='Pct_Atraso',
-                       title='Percentual de Atrasos por Mes', markers=True,
-                       color_discrete_sequence=[COR_DANGER])
-        fig6.update_layout(**DARK_LAYOUT, xaxis_title='', yaxis_title='% Atrasados',
-                           yaxis_ticksuffix='%',
-                           template='plotly_dark', height=400)
-        st.plotly_chart(fig6, width='stretch')
+    atraso_mes = (df_entregues.groupby('mes_ano')['tempo_atraso']
+                  .mean().mul(100).reset_index())
+    atraso_mes.columns = ['Mes', 'Pct_Atraso']
+    fig6 = px.line(atraso_mes, x='Mes', y='Pct_Atraso',
+                   title='Percentual de Atrasos por Mes', markers=True,
+                   color_discrete_sequence=[COR_DANGER])
+    fig6.update_layout(**DARK_LAYOUT, xaxis_title='', yaxis_title='% Atrasados',
+                       yaxis_ticksuffix='%',
+                       template='plotly_dark', height=380)
+    st.plotly_chart(fig6, width='stretch')
 
     # --- Boxplot tempo por top 10 categorias ---
     top10_cat = df_f['product_category_name'].value_counts().head(10).index
@@ -301,9 +367,9 @@ with tab_entregas:
                        showlegend=False, template='plotly_dark', height=420)
     fig7.update_xaxes(tickangle=-45)
     st.plotly_chart(fig7, width='stretch')
-    st.caption('O tempo padrao de entrega e uniforme entre categorias (~10-12 dias). '
-               'Os outliers severos aparecem em todas, mas moveis e itens volumosos '
-               'registram os piores extremos, ultrapassando 200 dias.')
+    insight('O tempo padrao de entrega e uniforme entre categorias (~10-12 dias). '
+            'Os outliers severos aparecem em todas, mas moveis e itens volumosos '
+            'registram os piores extremos, ultrapassando 200 dias.', '📦')
 
 
 # ===========================================================================
@@ -322,8 +388,8 @@ with tab_frete:
         fig8.update_layout(**DARK_LAYOUT, xaxis_title='Preco (R$)', yaxis_title='Frete (R$)',
                            template='plotly_dark', height=400)
         st.plotly_chart(fig8, width='stretch')
-        st.caption('Nao ha correlacao clara entre preco e frete. O custo logistico depende '
-                   'de peso, volume e distancia geografica, nao do valor comercial do produto.')
+        insight('Nao ha correlacao clara entre preco e frete. O custo logistico depende '
+                'de peso, volume e distancia geografica, nao do valor comercial do produto.', '🔍')
 
     # --- Top 10 frete medio ---
     with f2:
@@ -337,8 +403,8 @@ with tab_frete:
                            xaxis_tickprefix='R$ ', coloraxis_showscale=False,
                            template='plotly_dark', height=400)
         st.plotly_chart(fig9, width='stretch')
-        st.caption('PCs, colchoes, estofados e moveis lideram — itens grandes e pesados '
-                   'encarecem a logistica, com frete medio de R$ 35 a R$ 42.')
+        insight('PCs, colchoes, estofados e moveis lideram — itens grandes e pesados '
+                'encarecem a logistica, com frete medio de R$ 35 a R$ 42.', '💲')
 
     # --- Boxplot frete: pontual vs atrasado ---
     df_atraso = df_entregues.copy()
@@ -350,9 +416,9 @@ with tab_frete:
     fig10.update_layout(**DARK_LAYOUT, xaxis_title='', yaxis_title='Frete (R$)',
                         showlegend=False, template='plotly_dark', height=380)
     st.plotly_chart(fig10, width='stretch')
-    st.caption('Pagar frete mais caro nao garante entrega sem atraso. Fretes altos '
-               'indicam produtos volumosos ou destinos distantes, que naturalmente '
-               'tem logistica mais complexa.')
+    insight('Pagar frete mais caro nao garante entrega sem atraso. Fretes altos '
+            'indicam produtos volumosos ou destinos distantes, que naturalmente '
+            'tem logistica mais complexa.', '⚠️')
 
 
 # ===========================================================================
@@ -371,9 +437,9 @@ with tab_detalhes:
         fig11.update_layout(**DARK_LAYOUT, xaxis_title='Valor (R$)', yaxis_title='Frequencia',
                             template='plotly_dark', height=400, bargap=0.05)
         st.plotly_chart(fig11, width='stretch')
-        st.caption('Maioria das vendas concentrada ate R$ 200 — operacao de alto giro '
-                   'com produtos acessiveis. Politicas de desconto e frete gratis '
-                   'devem considerar margens apertadas nessa faixa.')
+        insight('Maioria das vendas concentrada ate R$ 200 — operacao de alto giro '
+                'com produtos acessiveis. Politicas de desconto e frete gratis '
+                'devem considerar margens apertadas nessa faixa.', '🎯')
 
     # --- Itens por pedido ---
     with d2:
@@ -385,9 +451,9 @@ with tab_detalhes:
         fig12.update_layout(**DARK_LAYOUT, xaxis_title='Itens', yaxis_title='Frequencia',
                             template='plotly_dark', height=400, bargap=0.05)
         st.plotly_chart(fig12, width='stretch')
-        st.caption('A maioria compra apenas 1 item por pedido. Grande oportunidade '
-                   'para cross-sell: sugerir produtos complementares no checkout '
-                   'ou desconto no frete ao adicionar segundo item.')
+        insight('A maioria compra apenas 1 item por pedido. Grande oportunidade '
+                'para cross-sell: sugerir produtos complementares no checkout '
+                'ou desconto no frete ao adicionar segundo item.', '🛒')
 
     # --- Preco medio por status ---
     preco_status = df_f.groupby('order_status')['price'].mean().sort_values().reset_index()
@@ -399,9 +465,9 @@ with tab_detalhes:
                         yaxis_tickprefix='R$ ', coloraxis_showscale=False,
                         template='plotly_dark', height=380)
     st.plotly_chart(fig13, width='stretch')
-    st.caption('Pedidos entregues tem ticket medio mais baixo. Itens mais caros sofrem '
-               'mais friccao: mais cancelamentos, mais tempo em processamento e mais '
-               'rupturas de estoque.')
+    insight('Pedidos entregues tem ticket medio mais baixo. Itens mais caros sofrem '
+            'mais friccao: mais cancelamentos, mais tempo em processamento e mais '
+            'rupturas de estoque.', '⚡')
 
     # --- Peso medio x Frete medio por categoria ---
     if 'product_weight_g' in df_f.columns:
@@ -420,16 +486,16 @@ with tab_detalhes:
                             coloraxis_showscale=False,
                             template='plotly_dark', height=420)
         st.plotly_chart(fig14, width='stretch')
-        st.caption('Quanto maior o peso, maior o frete — confirma que o custo logistico '
-                   'e definido por fatores fisicos. O tamanho das bolhas mostra o volume '
-                   'de vendas de cada categoria.')
+        insight('Quanto maior o peso, maior o frete — confirma que o custo logistico '
+                'e definido por fatores fisicos. O tamanho das bolhas mostra o volume '
+                'de vendas de cada categoria.', '⚖️')
 
 
 # ===========================================================================
 # ABA 5 - DADOS
 # ===========================================================================
 with tab_dados:
-    st.subheader('Dados Filtrados')
+    st.subheader('📋 Dados Filtrados')
     colunas_exibir = [
         'order_id', 'order_status', 'product_category_name',
         'price', 'freight_value', 'mes_ano', 'tempo_entrega', 'tempo_atraso',
@@ -443,22 +509,48 @@ with tab_dados:
     # Botao de download
     csv_export = df_f[colunas_exibir].to_csv(index=False).encode('utf-8')
     st.download_button(
-        label='Baixar dados filtrados (.csv)',
+        label='⬇️ Baixar dados filtrados (.csv)',
         data=csv_export,
         file_name='olist_dados_filtrados.csv',
         mime='text/csv',
     )
 
     st.markdown('---')
-    st.subheader('Resumo Estatistico')
+    st.subheader('📊 Resumo Estatistico')
     st.dataframe(
         df_f[['price', 'freight_value', 'tempo_entrega', 'product_weight_g']].describe().T,
         width='stretch',
     )
 
+    st.markdown('---')
+    st.subheader('🎯 Conclusoes e Recomendacoes')
+
+    col_c1, col_c2 = st.columns(2)
+    with col_c1:
+        st.markdown("""
+        **Pontos Fortes da Operacao:**
+        - ✅ Taxa de pontualidade acima de 90%
+        - ✅ Crescimento sustentavel pos-Black Friday
+        - ✅ Base consolidada com taxa de cancelamento minima
+        - ✅ Tempo medio de entrega competitivo (~12 dias)
+        """)
+    with col_c2:
+        st.markdown("""
+        **Oportunidades de Melhoria:**
+        - 🔄 Implementar cross-sell (maioria compra 1 item)
+        - 📦 Investigar entregas extremas (>50 dias)
+        - 💰 Reduzir friccao em pedidos de alto valor
+        - 🚚 Otimizar logistica de itens volumosos
+        """)
+
 
 # ---------------------------------------------------------------------------
 # Rodape
 # ---------------------------------------------------------------------------
-st.markdown('<div class="footer">Dashboard Olist - Analise de Vendas | Dados: Olist Public Dataset</div>',
-            unsafe_allow_html=True)
+st.markdown(
+    '<div class="footer">'
+    '📊 Dashboard Olist - Analise de Vendas | Dados: Olist Public Dataset (Kaggle) | '
+    'Desenvolvido por <b>Wisley Oliveira</b>'
+    '</div>',
+    unsafe_allow_html=True,
+)

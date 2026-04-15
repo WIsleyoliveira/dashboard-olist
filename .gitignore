@@ -1,6 +1,8 @@
 __pycache__/
 *.pyc
 .DS_Store
+.vscode/
+.ipynb_checkpoints/
 olist_orders_dataset.csv
 olist_order_items_dataset.csv
 olist_order_payments_dataset.csv
