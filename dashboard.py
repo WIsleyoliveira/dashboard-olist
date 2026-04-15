@@ -196,6 +196,8 @@ with tab_vendas:
                           yaxis_tickprefix='R$ ', yaxis_tickformat=',.0f',
                           template='plotly_dark', height=400)
         st.plotly_chart(fig, width='stretch')
+        st.caption('Crescimento continuo em 2017 com pico na Black Friday (novembro). '
+                   'Em 2018, o faturamento se manteve em patamar elevado, indicando consolidacao do negocio.')
 
     # --- Top 10 categorias ---
     with c2:
@@ -210,6 +212,8 @@ with tab_vendas:
                            coloraxis_showscale=False,
                            template='plotly_dark', height=400)
         st.plotly_chart(fig2, width='stretch')
+        st.caption('Beleza e Saude lidera isolada. O perfil de compra revela preferencia '
+                   'por cuidado pessoal, conforto para o lar e presentes.')
 
     c3, c4 = st.columns(2)
 
@@ -223,6 +227,8 @@ with tab_vendas:
         fig3.update_layout(**DARK_LAYOUT, xaxis_title='', yaxis_title='Pedidos',
                            template='plotly_dark', height=380)
         st.plotly_chart(fig3, width='stretch')
+        st.caption('A curva de pedidos acompanha o faturamento — o crescimento da receita '
+                   'foi tracionado por ganho de escala (mais clientes), nao por aumento de precos.')
 
     # --- Status dos pedidos (donut) ---
     with c4:
@@ -235,6 +241,8 @@ with tab_vendas:
         fig4.update_layout(**DARK_LAYOUT, template='plotly_dark', height=380,
                            showlegend=False)
         st.plotly_chart(fig4, width='stretch')
+        st.caption('Concentracao esmagadora em "delivered" — a base reflete vendas finalizadas '
+                   'com taxa de sucesso altissima e indice de cancelamento quase insignificante.')
 
     # --- Receita por categoria ao longo do tempo (heatmap) ---
     top5 = df_f.groupby('product_category_name')['price'].sum().nlargest(5).index
@@ -264,6 +272,8 @@ with tab_entregas:
         fig5.update_layout(**DARK_LAYOUT, xaxis_title='Dias', yaxis_title='Frequencia',
                            template='plotly_dark', height=400, bargap=0.05)
         st.plotly_chart(fig5, width='stretch')
+        st.caption('A maioria das entregas ocorre entre 0 e 20 dias. Porem, a cauda longa '
+                   'revela casos extremos (50 a 200 dias) que precisam ser investigados.')
 
     # --- % atraso por mes ---
     with e2:
@@ -289,6 +299,9 @@ with tab_entregas:
                        showlegend=False, template='plotly_dark', height=420)
     fig7.update_xaxes(tickangle=-45)
     st.plotly_chart(fig7, width='stretch')
+    st.caption('O tempo padrao de entrega e uniforme entre categorias (~10-12 dias). '
+               'Os outliers severos aparecem em todas, mas moveis e itens volumosos '
+               'registram os piores extremos, ultrapassando 200 dias.')
 
 
 # ===========================================================================
@@ -307,6 +320,8 @@ with tab_frete:
         fig8.update_layout(**DARK_LAYOUT, xaxis_title='Preco (R$)', yaxis_title='Frete (R$)',
                            template='plotly_dark', height=400)
         st.plotly_chart(fig8, width='stretch')
+        st.caption('Nao ha correlacao clara entre preco e frete. O custo logistico depende '
+                   'de peso, volume e distancia geografica, nao do valor comercial do produto.')
 
     # --- Top 10 frete medio ---
     with f2:
@@ -320,6 +335,8 @@ with tab_frete:
                            xaxis_tickprefix='R$ ', coloraxis_showscale=False,
                            template='plotly_dark', height=400)
         st.plotly_chart(fig9, width='stretch')
+        st.caption('PCs, colchoes, estofados e moveis lideram — itens grandes e pesados '
+                   'encarecem a logistica, com frete medio de R$ 35 a R$ 42.')
 
     # --- Boxplot frete: pontual vs atrasado ---
     df_atraso = df_entregues.copy()
@@ -331,6 +348,9 @@ with tab_frete:
     fig10.update_layout(**DARK_LAYOUT, xaxis_title='', yaxis_title='Frete (R$)',
                         showlegend=False, template='plotly_dark', height=380)
     st.plotly_chart(fig10, width='stretch')
+    st.caption('Pagar frete mais caro nao garante entrega sem atraso. Fretes altos '
+               'indicam produtos volumosos ou destinos distantes, que naturalmente '
+               'tem logistica mais complexa.')
 
 
 # ===========================================================================
@@ -349,6 +369,9 @@ with tab_detalhes:
         fig11.update_layout(**DARK_LAYOUT, xaxis_title='Valor (R$)', yaxis_title='Frequencia',
                             template='plotly_dark', height=400, bargap=0.05)
         st.plotly_chart(fig11, width='stretch')
+        st.caption('Maioria das vendas concentrada ate R$ 200 — operacao de alto giro '
+                   'com produtos acessiveis. Politicas de desconto e frete gratis '
+                   'devem considerar margens apertadas nessa faixa.')
 
     # --- Itens por pedido ---
     with d2:
@@ -360,6 +383,9 @@ with tab_detalhes:
         fig12.update_layout(**DARK_LAYOUT, xaxis_title='Itens', yaxis_title='Frequencia',
                             template='plotly_dark', height=400, bargap=0.05)
         st.plotly_chart(fig12, width='stretch')
+        st.caption('A maioria compra apenas 1 item por pedido. Grande oportunidade '
+                   'para cross-sell: sugerir produtos complementares no checkout '
+                   'ou desconto no frete ao adicionar segundo item.')
 
     # --- Preco medio por status ---
     preco_status = df_f.groupby('order_status')['price'].mean().sort_values().reset_index()
@@ -371,6 +397,9 @@ with tab_detalhes:
                         yaxis_tickprefix='R$ ', coloraxis_showscale=False,
                         template='plotly_dark', height=380)
     st.plotly_chart(fig13, width='stretch')
+    st.caption('Pedidos entregues tem ticket medio mais baixo. Itens mais caros sofrem '
+               'mais friccao: mais cancelamentos, mais tempo em processamento e mais '
+               'rupturas de estoque.')
 
     # --- Peso medio x Frete medio por categoria ---
     if 'product_weight_g' in df_f.columns:
@@ -389,6 +418,9 @@ with tab_detalhes:
                             coloraxis_showscale=False,
                             template='plotly_dark', height=420)
         st.plotly_chart(fig14, width='stretch')
+        st.caption('Quanto maior o peso, maior o frete — confirma que o custo logistico '
+                   'e definido por fatores fisicos. O tamanho das bolhas mostra o volume '
+                   'de vendas de cada categoria.')
 
 
 # ===========================================================================
