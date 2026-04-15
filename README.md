@@ -8,7 +8,7 @@ Analise completa de mais de 100 mil registros de vendas do marketplace Olist, de
 
 ## Contexto do Projeto
 
-O Olist e a maior plataforma de e-commerce para pequenos lojistas do Brasil. Este projeto analisa dados publicos de vendas entre 2016 e 2018, cobrindo todo o ciclo do pedido: compra, pagamento, logistica e entrega ao cliente.
+O Olist e a maior plataforma de e-commerce para pequenos lojistas do Brasil. Este projeto analisa dados publicos de vendas entre setembro de 2016 e agosto de 2018, cobrindo todo o ciclo do pedido: compra, pagamento, logistica e entrega ao cliente.
 
 O trabalho foi dividido em duas etapas:
 1. **Analise exploratoria** (`Projeto.ipynb`) — Limpeza, tratamento e visualizacao dos dados com Pandas, Seaborn e Matplotlib
@@ -17,8 +17,9 @@ O trabalho foi dividido em duas etapas:
 ## Principais Descobertas
 
 ### Vendas
-- O faturamento cresceu continuamente ao longo de 2017, com pico expressivo na **Black Friday de novembro** (mais de 8 mil pedidos)
-- Apos a Black Friday, o patamar de vendas se manteve alto em 2018, indicando **crescimento real da operacao** e nao apenas sazonalidade
+- O faturamento cresceu continuamente ao longo de 2017, com pico expressivo na **Black Friday de novembro/2017** (mais de 7 mil pedidos)
+- Apos a Black Friday, o patamar de vendas se manteve alto ao longo de 2018, indicando **crescimento real da operacao**
+- Os dados vao ate agosto de 2018 (setembro/2018 tem apenas 1 registro, mes incompleto)
 - A categoria **Beleza e Saude** lidera isolada com mais de R$ 1 milhao em receita, seguida por Cama/Mesa/Banho e Relogios/Presentes
 
 ### Logistica

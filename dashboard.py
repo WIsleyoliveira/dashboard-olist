@@ -196,8 +196,9 @@ with tab_vendas:
                           yaxis_tickprefix='R$ ', yaxis_tickformat=',.0f',
                           template='plotly_dark', height=400)
         st.plotly_chart(fig, width='stretch')
-        st.caption('Crescimento continuo em 2017 com pico na Black Friday (novembro). '
-                   'Em 2018, o faturamento se manteve em patamar elevado, indicando consolidacao do negocio.')
+        st.caption('Crescimento continuo em 2017 com pico na Black Friday (nov/2017, mais de 7 mil pedidos). '
+                   'Apos o pico, o patamar se manteve alto ao longo de 2018, indicando consolidacao. '
+                   'Os dados vao de set/2016 a ago/2018 (set/2018 tem apenas 1 registro, mes incompleto).')
 
     # --- Top 10 categorias ---
     with c2:
@@ -228,7 +229,8 @@ with tab_vendas:
                            template='plotly_dark', height=380)
         st.plotly_chart(fig3, width='stretch')
         st.caption('A curva de pedidos acompanha o faturamento — o crescimento da receita '
-                   'foi tracionado por ganho de escala (mais clientes), nao por aumento de precos.')
+                   'foi tracionado por ganho de escala (mais clientes), nao por aumento de precos. '
+                   'Pico em nov/2017 com 7.259 pedidos unicos.')
 
     # --- Status dos pedidos (donut) ---
     with c4:
